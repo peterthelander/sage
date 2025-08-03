@@ -304,16 +304,6 @@ Keep response under 100 words and be encouraging but realistic.`
             </div>
           )}
           
-          {/* Show status if using environment key */}
-          {hasEnvApiKey && (
-            <div className="mt-6 max-w-md mx-auto">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                <p className="text-sm text-green-700">
-                  ✓ API key configured - All features enabled
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap justify-center mb-8 bg-white rounded-lg shadow-md p-2">
