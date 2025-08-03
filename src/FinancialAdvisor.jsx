@@ -27,9 +27,12 @@ const FinancialAdvisor = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [purchaseInput, setPurchaseInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_OPENAI_API_KEY || '');
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
+
+  // Check if we have an API key from environment
+  const hasEnvApiKey = !!import.meta.env.VITE_OPENAI_API_KEY;
 
   useEffect(() => {
     if (!showOnboarding && chatHistory.length === 0) {
@@ -271,33 +274,46 @@ Keep response under 100 words and be encouraging but realistic.`
             <span>100% Private - Your data never leaves your browser</span>
           </div>
           
-          {/* API Key Input */}
-          <div className="mt-6 max-w-md mx-auto">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
-                OpenAI API Key
-              </label>
-              <input
-                type="password"
-                id="apiKey"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your API key to enable chat features"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Get your API key from{' '}
-                <a 
-                  href="https://platform.openai.com/api-keys" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  platform.openai.com/api-keys
-                </a>
-              </p>
+          {/* API Key Input - only show if no environment key */}
+          {!hasEnvApiKey && (
+            <div className="mt-6 max-w-md mx-auto">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
+                  OpenAI API Key
+                </label>
+                <input
+                  type="password"
+                  id="apiKey"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your API key to enable chat features"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Get your API key from{' '}
+                  <a 
+                    href="https://platform.openai.com/api-keys" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    platform.openai.com/api-keys
+                  </a>
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+          
+          {/* Show status if using environment key */}
+          {hasEnvApiKey && (
+            <div className="mt-6 max-w-md mx-auto">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                <p className="text-sm text-green-700">
+                  ✓ API key configured - All features enabled
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap justify-center mb-8 bg-white rounded-lg shadow-md p-2">
