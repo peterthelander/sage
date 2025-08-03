@@ -4,12 +4,26 @@ import UploadTab from './components/UploadTab';
 import ChatTab from './components/ChatTab';
 import PurchaseAdvisorTab from './components/PurchaseAdvisorTab';
 import InsightsTab from './components/InsightsTab';
+import OnboardingModal from './components/OnboardingModal';
 import { parseCSV } from './utils/transactions';
 
 const FinancialAdvisor = () => {
   const [activeTab, setActiveTab] = useState('upload');
   const [transactions, setTransactions] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('onboarded');
+    }
+    return true;
+  });
+  const [userProfile, setUserProfile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('onboardingData');
+      return stored ? JSON.parse(stored) : {};
+    }
+    return {};
+  });
   const [inputMessage, setInputMessage] = useState('');
   const [purchaseInput, setPurchaseInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -18,14 +32,22 @@ const FinancialAdvisor = () => {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
-    if (chatHistory.length === 0) {
+    if (!showOnboarding && chatHistory.length === 0) {
+      const namePart = userProfile.name ? ` ${userProfile.name}` : '';
+      const questionPart = userProfile.questions ? ` You mentioned you're interested in ${userProfile.questions}.` : '';
+      const goalsPart = userProfile.goals ? ` We'll work toward your goals: ${userProfile.goals}.` : '';
       setChatHistory([{
         type: 'assistant',
-        message: "Hello! I'm Sage, your AI financial advisor. Upload your transaction data to get started, or feel free to ask me any questions about managing your finances. I'm here to help you make informed financial decisions!",
+        message: `Hello${namePart}! I'm Sage, your AI financial advisor.${questionPart}${goalsPart} Upload your transaction data to get started, or feel free to ask me any questions about managing your finances. I'm here to help you make informed financial decisions!`,
         timestamp: new Date()
-      }]);
+      },
+      ...(transactions.length > 0 ? [{
+        type: 'system',
+        message: `Successfully loaded ${transactions.length} transactions from your CSV file. I can now provide personalized insights about your spending!`,
+        timestamp: new Date()
+      }] : [])]);
     }
-  }, []);
+  }, [showOnboarding]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,6 +71,16 @@ const FinancialAdvisor = () => {
         setActiveTab('chat');
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleOnboardingComplete = (data) => {
+    const profile = { ...userProfile, ...data };
+    setUserProfile(profile);
+    setShowOnboarding(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboarded', 'true');
+      localStorage.setItem('onboardingData', JSON.stringify(profile));
     }
   };
 
@@ -218,6 +250,12 @@ Keep response under 100 words and be encouraging but realistic.`
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {showOnboarding && (
+        <OnboardingModal
+          onComplete={handleOnboardingComplete}
+          setTransactions={setTransactions}
+        />
+      )}
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
