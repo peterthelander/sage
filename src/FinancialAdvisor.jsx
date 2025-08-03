@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, MessageCircle, DollarSign, TrendingUp, Shield, BarChart3 } from 'lucide-react';
+import { Upload, MessageCircle, DollarSign, TrendingUp, Shield, BarChart3, User } from 'lucide-react';
 import UploadTab from './components/UploadTab';
 import ChatTab from './components/ChatTab';
 import PurchaseAdvisorTab from './components/PurchaseAdvisorTab';
@@ -257,6 +257,7 @@ Keep response under 100 words and be encouraging but realistic.`
         <OnboardingModal
           onComplete={handleOnboardingComplete}
           setTransactions={setTransactions}
+          initialData={userProfile}
         />
       )}
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -311,11 +312,12 @@ Keep response under 100 words and be encouraging but realistic.`
             { id: 'upload', label: 'Upload Data', icon: Upload },
             { id: 'chat', label: 'Financial Chat', icon: MessageCircle },
             { id: 'purchase', label: 'Purchase Advisor', icon: DollarSign },
-            { id: 'insights', label: 'Insights', icon: BarChart3 }
+            { id: 'insights', label: 'Insights', icon: BarChart3 },
+            { id: 'onboarding', label: 'Onboarding', icon: User }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id)}
+              onClick={() => id === 'onboarding' ? setShowOnboarding(true) : setActiveTab(id)}
               className={`flex items-center px-4 py-2 rounded-md mx-1 my-1 transition-colors ${
                 activeTab === id
                   ? 'bg-blue-600 text-white'

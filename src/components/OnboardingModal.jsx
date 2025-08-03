@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { parseCSV } from '../utils/transactions';
 
-const OnboardingModal = ({ onComplete, setTransactions }) => {
-  const [taxFileName, setTaxFileName] = useState('');
+const OnboardingModal = ({ onComplete, setTransactions, initialData = {} }) => {
+  const [taxFileName, setTaxFileName] = useState(initialData.taxReturn || '');
   const [transactionFileName, setTransactionFileName] = useState('');
-  const [name, setName] = useState('');
-  const [goals, setGoals] = useState('');
-  const [questions, setQuestions] = useState('');
+  const [name, setName] = useState(initialData.name || '');
+  const [goals, setGoals] = useState(initialData.goals || '');
+  const [questions, setQuestions] = useState(initialData.questions || '');
 
   const handleTaxUpload = (e) => {
     const file = e.target.files[0];
@@ -91,7 +91,7 @@ const OnboardingModal = ({ onComplete, setTransactions }) => {
             onClick={() => onComplete({})}
             className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
           >
-            Skip for now
+            Close
           </button>
           <button
             type="submit"
