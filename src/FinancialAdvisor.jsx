@@ -271,7 +271,7 @@ Keep response under 100 words and be encouraging but realistic.`
           </p>
           <div className="flex items-center justify-center mt-4 text-sm text-green-600">
             <Shield className="h-4 w-4 mr-1" />
-            <span>100% Private - Your data never leaves your browser</span>
+            <span>Your raw data stays in your browser; chat summaries are sent to the AI</span>
           </div>
           
           {/* API Key Input - only show if no environment key */}
