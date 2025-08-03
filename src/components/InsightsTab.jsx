@@ -1,15 +1,22 @@
 import React from 'react';
 import { FileText, PieChart } from 'lucide-react';
-import { getSpendingByCategory } from '../utils/transactions';
+import { getSpendingByCategory, identifyRecurringTransactions, detectSpendingTrends } from '../utils/transactions';
 
-const InsightsTab = ({ transactions }) => (
-  transactions.length === 0 ? (
-    <div className="text-center">
-      <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold mb-4">No Data Available</h3>
-      <p className="text-gray-600">Upload your transaction data to see personalized insights.</p>
-    </div>
-  ) : (
+const InsightsTab = ({ transactions }) => {
+  if (transactions.length === 0) {
+    return (
+      <div className="text-center">
+        <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold mb-4">No Data Available</h3>
+        <p className="text-gray-600">Upload your transaction data to see personalized insights.</p>
+      </div>
+    );
+  }
+
+  const recurring = identifyRecurringTransactions(transactions);
+  const trends = detectSpendingTrends(transactions);
+
+  return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg">
         <h3 className="text-xl font-semibold mb-4">Financial Overview</h3>
@@ -59,8 +66,44 @@ const InsightsTab = ({ transactions }) => (
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h4 className="text-lg font-semibold mb-4">Spending Trends</h4>
+          <div className="space-y-3 text-sm">
+            {trends.length === 0 ? (
+              <p className="text-gray-600">Not enough data to determine trends.</p>
+            ) : (
+              trends.map(t => (
+                <div key={t.category} className="flex justify-between items-center">
+                  <span className="font-medium">{t.category}</span>
+                  <span className={t.direction === 'up' ? 'text-red-600' : 'text-green-600'}>
+                    {t.direction === 'up' ? '+' : '-'}${Math.abs(t.change).toFixed(2)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h4 className="text-lg font-semibold mb-4">Recurring Transactions</h4>
+          <div className="space-y-3 text-sm">
+            {recurring.length === 0 ? (
+              <p className="text-gray-600">No recurring transactions detected.</p>
+            ) : (
+              recurring.map(r => (
+                <div key={r.description} className="flex justify-between items-center">
+                  <span className="font-medium">{r.description}</span>
+                  <span className="text-gray-600">${r.averageAmount.toFixed(2)}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
-  )
-);
+  );
+};
 
 export default InsightsTab;
