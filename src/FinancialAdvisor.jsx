@@ -13,6 +13,7 @@ const FinancialAdvisor = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [purchaseInput, setPurchaseInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
 
@@ -53,6 +54,15 @@ const FinancialAdvisor = () => {
 
   const handleChatMessage = async () => {
     if (!inputMessage.trim()) return;
+    
+    if (!apiKey.trim()) {
+      setChatHistory(prev => [...prev, {
+        type: 'assistant',
+        message: "Please enter your OpenAI API key in the settings to chat with me. You can get one from https://platform.openai.com/api-keys",
+        timestamp: new Date()
+      }]);
+      return;
+    }
 
     const userMessage = {
       type: 'user',
@@ -76,20 +86,23 @@ Recent Transactions:
 ${transactions.slice(-10).map(t => `${t.date}: ${t.description} - $${Math.abs(t.amount).toFixed(2)} (${t.category})`).join('\n')}` :
         'No financial data uploaded yet.';
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "gpt-4",
           max_tokens: 1000,
           messages: [
             {
+              role: "system",
+              content: "You are Sage, a helpful and friendly AI financial advisor. You provide practical, non-judgmental advice about personal finances."
+            },
+            {
               role: "user",
-              content: `You are Sage, a helpful and friendly AI financial advisor. You provide practical, non-judgmental advice about personal finances.
-
-${financialContext}
+              content: `${financialContext}
 
 User's question: "${inputMessage}"
 
@@ -102,7 +115,7 @@ Provide a helpful response based on their financial data (if available) and gene
       const data = await response.json();
       const assistantMessage = {
         type: 'assistant',
-        message: data.content[0].text,
+        message: data.choices[0].message.content,
         timestamp: new Date()
       };
 
@@ -120,6 +133,15 @@ Provide a helpful response based on their financial data (if available) and gene
 
   const handlePurchaseAdvice = async () => {
     if (!purchaseInput.trim()) return;
+    
+    if (!apiKey.trim()) {
+      setChatHistory(prev => [...prev, {
+        type: 'assistant',
+        message: "Please enter your OpenAI API key in the settings to use purchase advice. You can get one from https://platform.openai.com/api-keys",
+        timestamp: new Date()
+      }]);
+      return;
+    }
 
     setIsProcessing(true);
 
@@ -134,20 +156,23 @@ Recent spending in similar categories:
 ${transactions.slice(-20).map(t => `${t.description} - $${Math.abs(t.amount).toFixed(2)} (${t.category})`).join('\n')}` :
         'No financial data available for personalized advice.';
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "gpt-4",
           max_tokens: 500,
           messages: [
             {
+              role: "system",
+              content: "You are Sage, a helpful AI financial advisor providing real-time purchase advice. Be friendly but honest about spending decisions."
+            },
+            {
               role: "user",
-              content: `You are Sage, a helpful AI financial advisor providing real-time purchase advice. Be friendly but honest about spending decisions.
-
-${financialContext}
+              content: `${financialContext}
 
 The user is considering buying: "${purchaseInput}"
 
@@ -173,7 +198,7 @@ Keep response under 100 words and be encouraging but realistic.`
         },
         {
           type: 'assistant',
-          message: `🛍️ **Purchase Advice**: ${data.content[0].text}`,
+          message: `🛍️ **Purchase Advice**: ${data.choices[0].message.content}`,
           timestamp: new Date()
         }
       ]);
@@ -206,6 +231,34 @@ Keep response under 100 words and be encouraging but realistic.`
           <div className="flex items-center justify-center mt-4 text-sm text-green-600">
             <Shield className="h-4 w-4 mr-1" />
             <span>100% Private - Your data never leaves your browser</span>
+          </div>
+          
+          {/* API Key Input */}
+          <div className="mt-6 max-w-md mx-auto">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
+                OpenAI API Key
+              </label>
+              <input
+                type="password"
+                id="apiKey"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your API key to enable chat features"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Get your API key from{' '}
+                <a 
+                  href="https://platform.openai.com/api-keys" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  platform.openai.com/api-keys
+                </a>
+              </p>
+            </div>
           </div>
         </div>
 
